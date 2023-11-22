@@ -1,0 +1,17 @@
+texture packer
+    packs multiple images into one and generates a header file with
+    the coordinates of all files.
+
+how to use?
+    texture_packer.exe a.png b.png ...
+    this generates two files:
+        output.png: image of 1024x1024 pixels containing a.png, b.png, etc in one file.
+        output.h: contains the coordinates and dimensions of all images.
+
+build/installation/compile
+    run build.bat or simply use the texture_packer.exe included in the 
+    repository.
+
+credits
+    thanks to stb_rect_pack, stb_image and stb_image_write from:
+    https://github.com/nothings/stb
