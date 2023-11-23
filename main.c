@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
                 "usage: %s output_name a.png b.png ...\n"
                 "this generates two files:\n"
                 "    output_name.png: image of 1024x1024 pixels containing a.png, b.png, etc in one file.\n"
-                "    output_name.h: contains the coordinates and dimensions of all images.\n",
+                "    output_name.h: contains the path, coordinates and dimensions of all images.\n",
                 argv[0]);
         return 0;
     }

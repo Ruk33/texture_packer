@@ -6,7 +6,7 @@ how to use?
     texture_packer.exe output_name a.png b.png ...
     this generates two files:
         output_name.png: image of 1024x1024 pixels containing a.png, b.png, etc in one file.
-        output_name.h: contains the coordinates and dimensions of all images.
+        output_name.h: contains the path, coordinates and dimensions of all images.
 
 build/installation/compile
     run build.bat or simply use the texture_packer.exe included in the 
