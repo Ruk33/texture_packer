@@ -12,6 +12,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+typedef unsigned char byte;
+
 int main(int argc, char **argv) {
     if (argc == 1) {
         fprintf(stderr, 
@@ -31,48 +33,28 @@ int main(int argc, char **argv) {
     stbrp_init_target(&context, 1024, 1024, nodes, 1024);
     
     // Create file with coordinates
-    char *output = argv[1];
-    char output_h_name[64] = {0};
-    char output_png_name[64] = {0};
-    snprintf(output_h_name, sizeof(output_h_name) - 1, "%s.h", output);
-    snprintf(output_png_name, sizeof(output_png_name) - 1, "%s.png", output);
+    char *output_name = argv[1];
+    char header_name[64] = {0};
+    char png_name[64] = {0};
+    snprintf(header_name, sizeof(header_name) - 1, "%s.h", output_name);
+    snprintf(png_name, sizeof(png_name) - 1, "%s.png", output_name);
     
-    FILE *coordinates_file = fopen(output_h_name, "w+");
-    if (!coordinates_file) {
-        fprintf(stderr, "unable to create %s file\n", output_h_name);
+    FILE *header_file = fopen(header_name, "w+");
+    if (!header_file) {
+        fprintf(stderr, "unable to create %s file\n", header_name);
         return 0;
     }
     
-    // Load the images
+    // Load the images to fetch width & height.
     int num_images = argc - 2;
     for (int i = 0; i < num_images; i++) {
         int n = 0;
-        unsigned char *data = stbi_load(argv[i + 2], 
-                                        &rects[i].w, 
-                                        &rects[i].h, 
-                                        &n, 
-                                        0);
-        free(data);
+        free(stbi_load(argv[i + 2], &rects[i].w, &rects[i].h, &n, 0));
     }
     stbrp_pack_rects(&context, rects, num_images);
     
-    // Start writing coordinates file
-    fprintf(coordinates_file, 
-            "#ifndef coordinates_struct_h\n"
-            "#define coordinates_struct_h\n"
-            "struct coordinates {\n"
-            "    int x;\n"
-            "    int y;\n"
-            "    int w;\n"
-            "    int h;\n"
-            "    const char *path;\n"
-            "};\n"
-            "#endif\n"
-            "static struct coordinates %s_coordinates[] = {\n",
-            output);
-    
     // Create the output image
-    unsigned char *image_output = calloc(1024 * 1024 * 4, sizeof(unsigned char));
+    byte *atlas_image = calloc(1024 * 1024 * 4, sizeof(byte));
     for (int i = 0; i < num_images; i++) {
         int x = rects[i].x;
         int y = rects[i].y;
@@ -80,39 +62,44 @@ int main(int argc, char **argv) {
         int h = rects[i].h;
         int n = 0;
         
-        fprintf(coordinates_file, 
-                "    {\n"
-                "        %d,\n"
-                "        %d,\n"
-                "        %d,\n"
-                "        %d,\n"
-                "        \"%s\",\n"
-                "    },\n",
-                x,
-                y,
-                w,
-                h,
-                argv[i + 2]);
-        
-        unsigned char *data = stbi_load(argv[i + 2], &w, &h, &n, 0);
+        byte *image = stbi_load(argv[i + 2], &w, &h, &n, 0);
         for (int j = 0; j < h; j++) {
             for (int k = 0; k < w; k++) {
                 int index = ((y + j) * 1024 + (x + k)) * 4;
-                int data_index = (j * w + k) * n;
-                image_output[index + 0] = data[data_index + 0];
-                image_output[index + 1] = data[data_index + 1];
-                image_output[index + 2] = data[data_index + 2];
-                image_output[index + 3] = data[data_index + 3];
+                int pixel_index = (j * w + k) * n;
+                atlas_image[index + 0] = image[pixel_index + 0];
+                atlas_image[index + 1] = image[pixel_index + 1];
+                atlas_image[index + 2] = image[pixel_index + 2];
+                atlas_image[index + 3] = image[pixel_index + 3];
             }
         }
-        free(data);
+        free(image);
     }
     
     // Save the output image
-    stbi_write_png(output_png_name, 1024, 1024, 4, image_output, 1024 * 4);
+    stbi_write_png(png_name, 1024, 1024, 4, atlas_image, 1024 * 4);
     
-    fprintf(coordinates_file, "};\n");
-    fclose(coordinates_file);
+    // Write paths
+    fprintf(header_file, "static const char *%s_paths[] = {\n", output_name);
+    for (int i = 0; i < num_images; i++)
+        fprintf(header_file, "    \"%s\",\n", argv[i + 2]);
+    fprintf(header_file, "};\n");
+    
+    // Write x, y, w, h.
+    fprintf(header_file, 
+            "// x, y, w, h\n"
+            "static int %s_coordinates[][4] = {\n", 
+            output_name);
+    for (int i = 0; i < num_images; i++)
+        fprintf(header_file,
+                "    {%d, %d, %d, %d},\n", 
+                rects[i].x,
+                rects[i].y,
+                rects[i].w,
+                rects[i].h);
+    fprintf(header_file, "};\n");
+    
+    fclose(header_file);
     
     return 0;
 }
