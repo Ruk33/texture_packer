@@ -2,14 +2,25 @@ texture packer
     packs multiple images into one and generates a header file with
     the coordinates of all files.
 
+example
+    the output of this tool can be observed in the examples folder.
+    the command executed was: texture_packer.exe sprites 9foo.png 9bar.png 19baz.png
+
 how to use?
-    texture_packer.exe output_name a.png b.png ...
+    you can use the executable included in this repository (texture_packer.exe)
+    or compile following the steps in build/installation/compile.
+
+    texture_packer.exe output_name 1a.png 1b.png ...
+
     this generates two files:
-        output_name.png: image of 2048x2048 pixels containing a.png, b.png, etc in one file.
-        output_name.h: contains the path, coordinates and dimensions of all images.
+        output_name.png: image of 2048x2048 pixels containing 1a.png, 1b.png, etc in one file.
+        output_name.h: contains the path, coordinates, dimensions and frames of all images.
+
+    each filename must include the number of frames at the beginning. for
+    example, from a file named 2knight.png we can infer it has 2 frames.
 
 build/installation/compile
-    run build.bat or simply use the texture_packer.exe included in the 
+    run build.bat or simply use the texture_packer.exe included in the
     repository.
 
 credits
