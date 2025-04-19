@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
 
     // Write ids to header file.
     {
-        fprintf(header_file, "enum %s_id = {\n", output_name);
+        fprintf(header_file, "enum %s_id {\n", output_name);
         for (int i = 0; i < num_images; i++) {
             int frames = 0;
             char file_name[256] = {0};
