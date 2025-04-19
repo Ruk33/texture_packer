@@ -3,7 +3,7 @@ static const char *sprites_paths[] = {
     "9bar.png",
     "19baz.png",
 };
-enum sprites_id = {
+enum sprites_id {
     foo,
     bar,
     baz,
